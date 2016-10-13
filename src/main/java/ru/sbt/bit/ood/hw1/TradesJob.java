@@ -1,10 +1,11 @@
 package ru.sbt.bit.ood.hw1;
 
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
-import org.apache.commons.net.ftp.FTPClient;
 
 import java.io.*;
+
+import static ru.sbt.bit.ood.hw1.CsvParser.parse;
+import static ru.sbt.bit.ood.hw1.FileDownloader.downloadTradesFileFromFTP;
 
 public class TradesJob {
 
@@ -20,22 +21,6 @@ public class TradesJob {
         updateTrades(tradeRecords);
     }
 
-    public String downloadTradesFileFromFTP() {
-        FTPClient ftpClient = new FTPClient();
-        try {
-            ftpClient.connect("localhost", 8090);
-            ftpClient.login("foo", "password");
-            File tempFile = File.createTempFile("trades", "download");
-            OutputStream out = new FileOutputStream(tempFile);
-            ftpClient.retrieveFile("public/prod/trades.csv", out);
-            out.close();
-            return tempFile.getAbsolutePath();
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Could not download the file");
-        }
-    }
-
     private void updateTrades(Iterable<CSVRecord> trades) {
         tradesDAO.deleteAll();
         for (CSVRecord tradeRecord : trades) {
@@ -44,14 +29,5 @@ public class TradesJob {
         }
     }
 
-    private Iterable<CSVRecord> parse(String filename) {
-        try {
-            Reader in = new FileReader(filename);
-            Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
-            return records;
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException("There was an error while parsing CSV file");
-        }
-    }
+
 }
